@@ -50,16 +50,22 @@ def unlock():
         a.ins.write('CAL:PROT:INIT')
 
 
+def reset():
+    a.gpib.write('*CLS;*RST;*SRE 8;*ESE 1;*OPC')
+    a.gpib.write('UUT_FLUSH')
+
+
 a = ConnectedUUT()
 a.ins.write('*CLS')
 a.ins.write('*RST')
+reset()
 idn = a.ins.query('*IDN?')
 print(idn)
 stat_ok = a.ins.query('CAL:PROT:STAT?')
 
 unlock()
 # 校正ZERO
-"""
+
 a.ins.write('CONF:VOLT:DC')
 a.ins.write('CAL:PROT:DC:STEP 3,0')
 stats()
@@ -74,7 +80,7 @@ os.system('pause')
 a.ins.write('CONF:CAP')
 a.ins.write('CAL:PROT:DC:STEP 3,0')
 stats()
-"""
+
 # 校正電容
 print('電容校驗，連結 5520 normal 與 3510 input.')
 os.system('pause')
@@ -101,7 +107,7 @@ else:
     print('沒找到 5520 或 5522')
     os.system('pause')
     exit()
-"""
+
 # 1e-9
 a.ins.write('CONF:CAP 1E-9')
 a.ins.write('AVERAGE:STATE OFF')
@@ -129,23 +135,45 @@ for i in range(7):
     a.ins.write(f'CAL:PROT:DC:STEP 2,{y[i+1]}')
     stats()
 
-a.gpib.write('*CLS;*RST;*SRE 8;*ESE 1;*OPC')
-a.gpib.write('UUT_FLUSH')
-"""
+reset()
+
 # 校正熱電偶
 
-a.ins.write('CONF:VOLT:DC 0.1')
-a.gpib.write('*CLS;*SRE 8;*ESE 1')
-print(a.gpib.query('RANGELCK?'))
-os.system('pause')
-a.gpib.write(f'OUT NONE;OUT 0V;OPER;*OPC')
-sre()
-a.ins.write('CAL:PROT:DC:STEP 1,0')
-stats()
+x = [1, 2, 2]
+y = [0, 0.1, -0.1]
 
+a.ins.write(f'CONF:VOLT:DC 0.1')
+for i in range(3):
+    a.gpib.write('*CLS;*SRE 8;*ESE 1')
+    a.gpib.write(f'OUT {y[i]}V,0 Hz;EARTH OPEN;EXTGUARD OFF;OPER;*OPC')
+    sre()
+    a.ins.write(f'CAL:PROT:DC:STEP {x[i]},{y[i]}')
+    stats()
 
+x = [1, 2]
+y = [0, 1]
+a.ins.write('CONF:VOLT:DC 1')
+for i in range(2):
+    a.gpib.write('*CLS;*SRE 8;*ESE 1')
+    a.gpib.write(f'OUT {y[i]}V,0Hz;EARTH OPEN;EXTGUARD OFF;OPER;*OPC')
+    sre()
+    a.ins.write(f'CAL:PROT:DC:STEP {x[i]},{y[i]}')
+    stats()
 
-
+reset()
 
 print('熱電偶校驗，連結 5520 TC 與 3510 TC input.')
 os.system('pause')
+
+a.ins.write('CONF:TCO')
+
+a.gpib.write('*CLS;*SRE 8;*ESE 1')
+a.gpib.write('TSENS_TYPE TC;TC_TYPE K;TC_REF INT;OUT 0cel;OPER;*OPC')
+sre()
+time.sleep(300)
+a.ins.write('CAL:PROT:DC:STEP 1,0')
+stats()
+
+reset()
+
+save()
