@@ -10,7 +10,7 @@ class ConnectedUUT:  # 連接快捷
         usb_ins = [i for i in ins_tuples if 'USB' in i]  # 把資料類型改成list，只拿用USB連接的儀器
         gpib_ins = [i for i in ins_tuples if 'GPIB' in i]
         # 確定只有一台使用USB的儀器(電供不算)後，建立連結與id捷徑
-        if len(usb_ins) == 1:
+        if len(usb_ins) == 1 & len(gpib_ins) == 1:
             self.ins = rm.open_resource(usb_ins[0])
             self.gpib = rm.open_resource(gpib_ins[0])
         else:
@@ -194,7 +194,7 @@ def vef_cap():
     print('拔除 5520 normal(3510 input 需插著)')
     os.system('pause')
     os.system('cls')
-
+    # 1nF的NULL值
     a.ins.write(f'CONF:CAP 1e-9')
     a.ins.write('SAMP:COUN 20')
     a.ins.write('CALC:FUNC AVER')
@@ -203,6 +203,7 @@ def vef_cap():
     null_max = a.ins.query('CALC:AVER:MAX?')
     null_min = a.ins.query('CALC:AVER:MIN?')
     null_1nf = (null_max+null_min)/2
+    # 1uF到10mF的NULL值
     a.ins.write('SAMP:COUN 1')
     a.ins.write('CALC:STAT 0')
     cap = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
@@ -218,7 +219,7 @@ def vef_cap():
         null.append((null_max + null_min) / 2)
         a.ins.write('SAMP:COUN 1')
         a.ins.write('CALC:STAT 0')
-
+    # 1nF的讀值
     cap1 = []
     a.ins.write('CONF:CAP 1E-9')
     a.ins.write('CALC:FUNC NULL')
@@ -228,12 +229,14 @@ def vef_cap():
     a.gpib.write('*CLS;*SRE 8;*ESE 1')
     a.gpib.write(f'ZCOMP NONE;OUT 1e-9F;OPER;*OPC')
     cap1.append(a.ins.query('READ?'))
+    # 10、100nF的讀值
     x = [1e-8, 1e-7]
     for i in range(2):
         a.ins.write(f'SENS:CAP:RANG {x[i]}')
         a.gpib.write('*CLS;*SRE 8;*ESE 1')
         a.gpib.write(f'ZCOMP NONE;OUT {x[i]}F;OPER;*OPC')
         cap1.append(a.ins.query('READ?'))
+    # 1uF的讀值
     a.ins.write('CALC:STATE OFF')
     a.ins.write(f'SENS:CAP:RANG {cap[0]}')
     a.ins.write('CALC:FUNC NULL')
@@ -242,7 +245,7 @@ def vef_cap():
     a.gpib.write('*CLS;*SRE 8;*ESE 1')
     a.gpib.write(f'ZCOMP NONE;OUT {cap[0]}F;OPER;*OPC')
     cap1.append(a.ins.query('READ?'))
-
+    # 10uF到10mF的讀值
     cap2 = []
     for i in range(4):
         a.ins.write('CALC:STATE OFF')
@@ -256,7 +259,7 @@ def vef_cap():
     a.ins.write('CALC:STATE OFF')
     reset()
     a.ins.write('*RST')
-
+    # 檢驗數值是否在範圍內
     cap1_desc = [' 1 nF @ CAP 1nf', ' 10 nF @ CAP 1nf', ' 100 nF @ CAP 1nf', ' 1 uF @ CAP 1uf']
     cap2_desc = [' 10 uF @ CAP 10uf', ' 110 uF @ CAP 100uf', ' 1 mF @ CAP_1mf', ' 10 mF @ CAP_10mf']
     cap1s_lower = [0.986000, 0.986000, 99.250000, 0.992500]
@@ -297,6 +300,9 @@ if __name__ == '__main__':
     print('連結 5520 normal 與 3510 input(要拔除3510 TC input.')
     os.system('pause')
     os.system('cls')
+
+    cal_tco()
+
     vef_tco()
 
     os.system('pause')
