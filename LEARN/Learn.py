@@ -15,7 +15,8 @@ class ConnectedUUT:  # 連接快捷
             self.gpib = rm.open_resource(gpib_ins[0])
         else:
             print('"Meter" 的數量不是一台!(沒插usb OR 連結2台以上的meter)')
-            os.system('pause')
+            input('按 Enter 繼續')
+            exit()
 
 
 class Colors:  # 字體顏色
@@ -65,7 +66,7 @@ def reset():  # Calibrator重置
 def cal_zero():  # 自身ZERO校正
     unlock()
     print('插入 short pin & tcoup short pin.')
-    os.system('pause')
+    input('按 Enter 繼續')
     os.system('cls')
     a.ins.write('CONF:VOLT:DC')
     a.ins.write('CAL:PROT:DC:STEP 3,0')
@@ -75,7 +76,7 @@ def cal_zero():  # 自身ZERO校正
     stats()
 
     print('拔除 short pin & tcoup short pin.')
-    os.system('pause')
+    input('按 Enter 繼續')
     os.system('cls')
     a.ins.write('CONF:CAP')
     a.ins.write('CAL:PROT:DC:STEP 3,0')
@@ -87,7 +88,7 @@ def cal_cap():
     # 校正電容
     unlock()
     print('連結 5520 normal 與 3510 input.')
-    os.system('pause')
+    input('按 Enter 繼續')
     os.system('cls')
     model = a.gpib.query('*IDN?')
     if '5520' in model:
@@ -97,7 +98,7 @@ def cal_cap():
     else:
         output = 0
         print('沒找到 5520 或 5522')
-        os.system('pause')
+        input('按 Enter 繼續')
         exit()
     # 1e-9
     a.ins.write('CONF:CAP 1E-9')
@@ -151,7 +152,7 @@ def cal_tco():
         stats()
     reset()
     print('連結 5520 TC 與 3510 TC input(要拔除3510 input.')
-    os.system('pause')
+    input('按 Enter 繼續')
     os.system('cls')
     a.ins.write('CONF:TCO')
     a.gpib.write('*CLS;*SRE 8;*ESE 1')
@@ -185,17 +186,17 @@ def vef_tco():
             print(Colors.FAIL +
                   f'{t_coup_desc[i]}    {cel[i]}    {deg_lower[i]}    {deg_upper[i]}    {status}'
                   + Colors.RESET)
-            os.system('pause')
+            input('按 Enter 繼續')
         else:
             print(f'{t_coup_desc[i]}    {cel[i]}    {deg_lower[i]}    {deg_upper[i]}    {status}')
 
 
 def vef_cap():
     print('拔除 5520 normal(3510 input 需插著)')
-    os.system('pause')
+    input('按 Enter 繼續')
     os.system('cls')
     # 1nF的NULL值
-    a.ins.write(f'CONF:CAP 1e-9')
+    a.ins.write('CONF:CAP 1e-9')
     a.ins.write('SAMP:COUN 20')
     a.ins.write('CALC:FUNC AVER')
     a.ins.write('CALC:STAT 1')
@@ -273,7 +274,7 @@ def vef_cap():
             print(Colors.FAIL +
                   f'{cap1_desc[i]}    {cap1[i]}    {cap1s_lower[i]}    {cap1s_upper[i]}    {status}'
                   + Colors.RESET)
-            os.system('pause')
+            input('按 Enter 繼續')
         else:
             print(f'{cap1_desc[i]}    {cap1[i]}    {cap1s_lower[i]}    {cap1s_upper[i]}    {status}')
     for i in range(4):
@@ -283,7 +284,7 @@ def vef_cap():
             print(Colors.FAIL +
                   f'{cap2_desc[i]}    {cap2[i]}    {cap2s_lower[i]}    {cap2s_upper[i]}    {status}'
                   + Colors.RESET)
-            os.system('pause')
+            input('按 Enter 繼續')
         else:
             print(f'{cap2_desc[i]}    {cap2[i]}    {cap2s_lower[i]}    {cap2s_upper[i]}    {status}')
 
@@ -298,11 +299,11 @@ if __name__ == '__main__':
     isr_ok = '6145\n'
 
     print('連結 5520 normal 與 3510 input(要拔除3510 TC input.')
-    os.system('pause')
+    input('按 Enter 繼續')
     os.system('cls')
 
-    cal_tco()
+    cal_cap()
 
-    vef_tco()
+    vef_cap()
 
-    os.system('pause')
+    input('按 Enter 結束')
