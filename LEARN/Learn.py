@@ -138,7 +138,7 @@ def vef_cap():
     a.ins.query('READ?')
     null_max = a.ins.query('CALC:AVER:MAX?')
     null_min = a.ins.query('CALC:AVER:MIN?')
-    null_1nf = (null_max+null_min)/2
+    null_1nf = (float(null_max)+float(null_min))/2
     # 1uF到10mF的NULL值
     a.ins.write('SAMP:COUN 1')
     a.ins.write('CALC:STAT 0')
@@ -152,7 +152,7 @@ def vef_cap():
         a.ins.query('READ?')
         null_max = a.ins.query('CALC:AVER:MAX?')
         null_min = a.ins.query('CALC:AVER:MIN?')
-        null.append((null_max + null_min) / 2)
+        null.append((float(null_max)+float(null_min))/2)
         a.ins.write('SAMP:COUN 1')
         a.ins.write('CALC:STAT 0')
     # 1nF的讀值
