@@ -87,9 +87,6 @@ def cal_zero():  # 自身ZERO校正
 def cal_cap():
     # 校正電容
     unlock()
-    print('連結 5520 normal 與 3510 input.')
-    input('按 Enter 繼續')
-    os.system('cls')
     model = a.gpib.query('*IDN?')
     if '5520' in model:
         output = 0.2
@@ -127,68 +124,6 @@ def cal_cap():
         stats()
     reset()
     save()
-
-
-def cal_tco():
-    # 校正熱電偶
-    unlock()
-    x = [1, 2, 2]
-    y = [0, 0.1, -0.1]
-    a.ins.write(f'CONF:VOLT:DC 0.1')
-    for i in range(3):
-        a.gpib.write('*CLS;*SRE 8;*ESE 1')
-        a.gpib.write(f'OUT {y[i]}V,0 Hz;EARTH OPEN;EXTGUARD OFF;OPER;*OPC')
-        sre()
-        a.ins.write(f'CAL:PROT:DC:STEP {x[i]},{y[i]}')
-        stats()
-    x = [1, 2]
-    y = [0, 1]
-    a.ins.write('CONF:VOLT:DC 1')
-    for i in range(2):
-        a.gpib.write('*CLS;*SRE 8;*ESE 1')
-        a.gpib.write(f'OUT {y[i]}V,0Hz;EARTH OPEN;EXTGUARD OFF;OPER;*OPC')
-        sre()
-        a.ins.write(f'CAL:PROT:DC:STEP {x[i]},{y[i]}')
-        stats()
-    reset()
-    print('連結 5520 TC 與 3510 TC input(要拔除3510 input.')
-    input('按 Enter 繼續')
-    os.system('cls')
-    a.ins.write('CONF:TCO')
-    a.gpib.write('*CLS;*SRE 8;*ESE 1')
-    a.gpib.write('TSENS_TYPE TC;TC_TYPE K;TC_REF INT;OUT 0cel;OPER;*OPC')
-    sre()
-    time.sleep(300)
-    a.ins.write('CAL:PROT:DC:STEP 1,0')
-    stats()
-    reset()
-    save()
-
-
-def vef_tco():
-    # 驗證熱電偶
-    t_coup_desc = ['0 degC @ TCOUPL_TYPE_K', '50 degC @ TCOUPL_TYPE_K', '500 degC @ TCOUPL_TYPE_K',
-                   '1000 degC @ TCOUPL_TYPE_K', '1372 degC @ TCOUPL_TYPE_K', '-200 degC @ TCOUPL_TYPE_K']  # 測試名稱
-    deg_lower = [-0.500000, 49.500000, 499.500000, 999.500000, 1371.500000, -200.500000]
-    deg_upper = [0.500000, 50.500000, 500.500000, 1000.500000, 1372.500000, -199.500000]
-    tc = [0, 50, 500, 1000, 1372, -200]
-    cel = []
-    a.ins.write('CONF:TCO')
-    for i in range(6):
-        status = 'pass'
-        a.gpib.write('*CLS;*SRE 8;*ESE 1')
-        a.gpib.write(f'TSENS_TYPE TC;TC_TYPE K;TC_REF INT;OUT {tc[i]}cel;OPER;*OPC')
-        sre()
-        cel.append(float(a.ins.query('READ?')))
-        stats()
-        if deg_lower[i] > cel[i] or deg_upper[i] < cel[i]:
-            status = 'fail'
-            print(Colors.FAIL +
-                  f'{t_coup_desc[i]}    {cel[i]}    {deg_lower[i]}    {deg_upper[i]}    {status}'
-                  + Colors.RESET)
-            input('按 Enter 繼續')
-        else:
-            print(f'{t_coup_desc[i]}    {cel[i]}    {deg_lower[i]}    {deg_upper[i]}    {status}')
 
 
 def vef_cap():
@@ -289,6 +224,69 @@ def vef_cap():
             print(f'{cap2_desc[i]}    {cap2[i]}    {cap2s_lower[i]}    {cap2s_upper[i]}    {status}')
 
 
+def cal_tco():
+    # 校正熱電偶
+    unlock()
+    x = [1, 2, 2]
+    y = [0, 0.1, -0.1]
+    a.ins.write(f'CONF:VOLT:DC 0.1')
+    for i in range(3):
+        a.gpib.write('*CLS;*SRE 8;*ESE 1')
+        a.gpib.write(f'OUT {y[i]}V,0 Hz;EARTH OPEN;EXTGUARD OFF;OPER;*OPC')
+        sre()
+        a.ins.write(f'CAL:PROT:DC:STEP {x[i]},{y[i]}')
+        stats()
+    x = [1, 2]
+    y = [0, 1]
+    a.ins.write('CONF:VOLT:DC 1')
+    for i in range(2):
+        a.gpib.write('*CLS;*SRE 8;*ESE 1')
+        a.gpib.write(f'OUT {y[i]}V,0Hz;EARTH OPEN;EXTGUARD OFF;OPER;*OPC')
+        sre()
+        a.ins.write(f'CAL:PROT:DC:STEP {x[i]},{y[i]}')
+        stats()
+    reset()
+    print('連結 5520 TC 與 3510 TC input(要拔除3510 input.')
+    input('按 Enter 繼續')
+    os.system('cls')
+    a.ins.write('CONF:TCO')
+    a.gpib.write('*CLS;*SRE 8;*ESE 1')
+    a.gpib.write('TSENS_TYPE TC;TC_TYPE K;TC_REF INT;OUT 0cel;OPER;*OPC')
+    sre()
+    time.sleep(300)
+    a.ins.write('CAL:PROT:DC:STEP 1,0')
+    stats()
+    reset()
+    save()
+
+
+def vef_tco():
+    # 驗證熱電偶
+    t_coup_desc = ['0 degC @ TCOUPL_TYPE_K', '50 degC @ TCOUPL_TYPE_K', '500 degC @ TCOUPL_TYPE_K',
+                   '1000 degC @ TCOUPL_TYPE_K', '1372 degC @ TCOUPL_TYPE_K', '-200 degC @ TCOUPL_TYPE_K']  # 測試名稱
+    deg_lower = [-0.500000, 49.500000, 499.500000, 999.500000, 1371.500000, -200.500000]
+    deg_upper = [0.500000, 50.500000, 500.500000, 1000.500000, 1372.500000, -199.500000]
+    tc = [0, 50, 500, 1000, 1372, -200]
+    cel = []
+    a.ins.write('CONF:TCO')
+    for i in range(6):
+        status = 'pass'
+        a.gpib.write('*CLS;*SRE 8;*ESE 1')
+        a.gpib.write(f'TSENS_TYPE TC;TC_TYPE K;TC_REF INT;OUT {tc[i]}cel;OPER;*OPC')
+        sre()
+        cel.append(float(a.ins.query('READ?')))
+        stats()
+        if deg_lower[i] > cel[i] or deg_upper[i] < cel[i]:
+            status = 'fail'
+            print(Colors.FAIL +
+                  f'{t_coup_desc[i]}    {cel[i]}    {deg_lower[i]}    {deg_upper[i]}    {status}'
+                  + Colors.RESET)
+            input('按 Enter 繼續')
+        else:
+            print(f'{t_coup_desc[i]}    {cel[i]}    {deg_lower[i]}    {deg_upper[i]}    {status}')
+    reset()
+
+
 if __name__ == '__main__':
     a = ConnectedUUT()
     a.ins.write('*CLS;*RST')
@@ -301,8 +299,6 @@ if __name__ == '__main__':
     print('連結 5520 normal 與 3510 input(要拔除3510 TC input.')
     input('按 Enter 繼續')
     os.system('cls')
-
-    cal_cap()
 
     vef_cap()
 
