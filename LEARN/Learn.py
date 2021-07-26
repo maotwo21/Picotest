@@ -26,18 +26,24 @@ class Colors:  # 字體顏色
     RESET = '\033[0m'  # RESET COLOR
 
 
-def stats():  # DMM狀態
+def stats():  # DMM狀態(上一步是否作動完畢)
     stat = a.ins.query('CAL:PROT:STAT?')
     while stat != stat_ok:
         stat = a.ins.query('CAL:PROT:STAT?')
         time.sleep(1)
 
 
-def sre():  # Calibrator狀態
+def sre():  # Calibrator狀態(上一步是否作動完畢)
     isr = a.gpib.query('ISR?')
     while isr != isr_ok:
         isr = a.gpib.query('ISR?')
         time.sleep(1)
+
+
+def unlock():  # 校正解鎖密碼
+    if '2110' in idn:
+        a.ins.write('CAL:PROT:CODE 123456')
+        a.ins.write('CAL:PROT:INIT')
 
 
 def save():  # DMM儲存校正值(日期)
@@ -52,15 +58,14 @@ def save():  # DMM儲存校正值(日期)
         a.ins.write('CAL:COUN:BACK:ZERO')
 
 
-def unlock():  # 校正解鎖密碼
-    if '2110' in idn:
-        a.ins.write('CAL:PROT:CODE 123456')
-        a.ins.write('CAL:PROT:INIT')
-
-
 def reset():  # Calibrator重置
     a.gpib.write('*CLS;*RST;*SRE 8;*ESE 1;*OPC')
     a.gpib.write('UUT_FLUSH')
+
+
+def save_to_txt():
+
+    pass
 
 
 def cal_zero():  # 自身ZERO校正
@@ -283,7 +288,9 @@ def vef_tco():
                   + Colors.RESET)
             input('     按 Enter 繼續')
         else:
-            print(f'{t_coup_desc[i]}    {cel[i]}    {deg_lower[i]}    {deg_upper[i]}    {status}')
+            print(Colors.OK +
+                  f'{t_coup_desc[i]}    {cel[i]}    {deg_lower[i]}    {deg_upper[i]}    {status}'
+                  + Colors.RESET)
     reset()
 
 
