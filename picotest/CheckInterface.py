@@ -9,8 +9,10 @@ import time
 rm = pyvisa.ResourceManager()  # 從 pyvisa 訪問 ni-visa
 ins_tuples = rm.list_resources()  # 資料類型是 tuples
 usb_ins = [i for i in ins_tuples if 'USB' in i]  # 把資料類型改成list，只拿用USB連接的儀器
+rs232_ins = [i for i in ins_tuples if 'rs232' in i]
 gpib_ins = [i for i in ins_tuples if 'GPIB' in i]
 net_ins = [i for i in ins_tuples if 'TCPIP' in i]
+print(rs232_ins)
 if usb_ins:
     usb = rm.open_resource(usb_ins[0])
 else:
